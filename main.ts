@@ -1,3 +1,41 @@
+namespace SpriteKind {
+    export const Bonus = SpriteKind.create()
+}
+scene.onHitWall(SpriteKind.Player, function (sprite, location) {
+    if (!(FireFighter.isHittingTile(CollisionDirection.Top))) {
+        Jump = 0
+    }
+    if (FireFighter.isHittingTile(CollisionDirection.Left) || FireFighter.isHittingTile(CollisionDirection.Right)) {
+        FireFighter.vy = 0
+    }
+})
+controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (Ability < 1) {
+        let list: number[] = []
+        Ability += 1
+        list.pop()
+    }
+})
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (Jump < 1) {
+        FireFighter.vy += -180
+    }
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Bonus, function (sprite, otherSprite) {
+    sprites.destroy(Bonus1, effects.warmRadial, 200)
+    info.changeScoreBy(25)
+})
+function CheckGameOver (listOfSprites: Image[]) {
+    for (let value of listOfSprites) {
+        if (FireFighter.tileKindAt(TileDirection.Center, value)) {
+            game.gameOver(false)
+        }
+    }
+}
+let Bonus1: Sprite = null
+let Ability = 0
+let Jump = 0
+let FireFighter: Sprite = null
 scene.setBackgroundImage(img`
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
@@ -121,7 +159,7 @@ scene.setBackgroundImage(img`
     dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
     `)
 tiles.setCurrentTilemap(tilemap`level1`)
-let mySprite = sprites.create(img`
+FireFighter = sprites.create(img`
     . . . . . . . . . . . . . . . . 
     . . . . . f f f f f f . . . . . 
     . . . f f e e e e f 2 f . . . . 
@@ -139,7 +177,50 @@ let mySprite = sprites.create(img`
     . . . f f f f f f f f f f . . . 
     . . . . f f . . . f f f . . . . 
     `, SpriteKind.Player)
-mySprite.setPosition(6, 107)
-scene.cameraFollowSprite(mySprite)
-mySprite.setStayInScreen(true)
-mySprite.ay = 500
+tiles.placeOnRandomTile(FireFighter, assets.tile`Spawn`)
+scene.cameraFollowSprite(FireFighter)
+FireFighter.setStayInScreen(true)
+FireFighter.ay = 500
+controller.moveSprite(FireFighter, 100, 0)
+Jump = 0
+Ability = 0
+Bonus1 = sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . 4 4 4 4 . . . . . . 
+    . . . . 4 4 4 5 5 4 4 4 . . . . 
+    . . . 3 3 3 3 4 4 4 4 4 4 . . . 
+    . . 4 3 3 3 3 2 2 2 1 1 4 4 . . 
+    . . 3 3 3 3 3 2 2 2 1 1 5 4 . . 
+    . 4 3 3 3 3 2 2 2 2 2 5 5 4 4 . 
+    . 4 3 3 3 2 2 2 4 4 4 4 5 4 4 . 
+    . 4 4 3 3 2 2 4 4 4 4 4 4 4 4 . 
+    . 4 2 3 3 2 2 4 4 4 4 4 4 4 4 . 
+    . . 4 2 3 3 2 4 4 4 4 4 2 4 . . 
+    . . 4 2 2 3 2 2 4 4 4 2 4 4 . . 
+    . . . 4 2 2 2 2 2 2 2 2 4 . . . 
+    . . . . 4 4 2 2 2 2 4 4 . . . . 
+    . . . . . . 4 4 4 4 . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Bonus)
+Bonus1.setPosition(123, 6)
+Bonus1.setBounceOnWall(true)
+Bonus1.setVelocity(randint(50, 100), 50)
+let BadSprites = [
+assets.tile`myTile`,
+assets.tile`myTile4`,
+assets.tile`myTile2`,
+assets.tile`Fire`
+]
+info.setScore(30)
+game.onUpdate(function () {
+    CheckGameOver(BadSprites)
+    if (FireFighter.tileKindAt(TileDirection.Bottom, sprites.dungeon.collectibleInsignia)) {
+        game.gameOver(true)
+    }
+    if (BadSprites.length == 3) {
+        BadSprites.push(assets.tile`Fire`)
+    }
+})
+game.onUpdateInterval(1000, function () {
+    info.changeScoreBy(-1)
+})
