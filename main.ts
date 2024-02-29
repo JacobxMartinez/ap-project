@@ -1,6 +1,39 @@
 namespace SpriteKind {
     export const Bonus = SpriteKind.create()
 }
+controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (WaterJump < 3) {
+        FireFighter.setImage(img`
+            ...........ff...........
+            .........ff22ff.........
+            .......fff2222fff.......
+            ......fff222222fff......
+            ......fff222222fff......
+            ......feeeeeeeeeeff.....
+            .....ffe22222222eff.....
+            .....fffffeeeefffff.....
+            ....fdfefbf44fbfeff.....
+            ....fbfe41fddf14ef......
+            ....fbffe4dddd4efe......
+            ....fcfef22222f4e.......
+            .....ff4f44554f4e.......
+            ........ffffffdde.......
+            .........ffffedde.......
+            ..............ee........
+            .............ccc........
+            ............ccbcc.......
+            .............cbc........
+            .............cbc........
+            .............cbc........
+            ..............c.........
+            .............999........
+            ............9.9.9.......
+            `)
+        FireFighter.vy += -300
+        FireFighter.startEffect(effects.bubbles, 500)
+        WaterJump += 1
+    }
+})
 scene.onHitWall(SpriteKind.Player, function (sprite, location) {
     if (!(FireFighter.isHittingTile(CollisionDirection.Top))) {
         Jump = 0
@@ -11,19 +44,62 @@ scene.onHitWall(SpriteKind.Player, function (sprite, location) {
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     if (Ability < 1) {
-        let list: number[] = []
         Ability += 1
-        list.pop()
+        FireFighter.startEffect(effects.bubbles, 1500)
+        fire = BadSprites.removeAt(3)
+        pause(5000)
+        BadSprites.push(fire)
     }
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (Jump < 1) {
+        Jump += 1
         FireFighter.vy += -180
     }
+})
+controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
+    FireFighter.setImage(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . f f f f f f . . . . . . 
+        . . . f 2 f e e e e f f . . . . 
+        . . f 2 2 2 f e e e e f f . . . 
+        . . f e e e e f f e e e f . . . 
+        . f e 2 2 2 2 e e f f f f . . . 
+        . f 2 e f f f f 2 2 2 e f . . . 
+        . f f f e e e f f f f f f f . . 
+        . f e e 4 4 f b e 4 4 e f f . . 
+        . . f e d d f 1 4 d 4 e e f . . 
+        . . . f d d d e e e e e f . . . 
+        . . . f e 4 e d d 4 f . . . . . 
+        . . . f 2 2 e d d e f . . . . . 
+        . . f f 5 5 f e e f f f . . . . 
+        . . f f f f f f f f f f . . . . 
+        . . . f f f . . . f f . . . . . 
+        `)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Bonus, function (sprite, otherSprite) {
     sprites.destroy(Bonus1, effects.warmRadial, 200)
     info.changeScoreBy(25)
+})
+controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
+    FireFighter.setImage(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . f f f f f f . . . . 
+        . . . . f f e e e e f 2 f . . . 
+        . . . f f e e e e f 2 2 2 f . . 
+        . . . f e e e f f e e e e f . . 
+        . . . f f f f e e 2 2 2 2 e f . 
+        . . . f e 2 2 2 f f f f e 2 f . 
+        . . f f f f f f f e e e f f f . 
+        . . f f e 4 4 e b f 4 4 e e f . 
+        . . f e e 4 d 4 1 f d d e f . . 
+        . . . f e e e e e d d d f . . . 
+        . . . . . f 4 d d e 4 e f . . . 
+        . . . . . f e d d e 2 2 f . . . 
+        . . . . f f f e e f 5 5 f f . . 
+        . . . . f f f f f f f f f f . . 
+        . . . . . f f . . . f f f . . . 
+        `)
 })
 function CheckGameOver (listOfSprites: Image[]) {
     for (let value of listOfSprites) {
@@ -32,10 +108,14 @@ function CheckGameOver (listOfSprites: Image[]) {
         }
     }
 }
+let fire: Image = null
+let WaterJump = 0
+let BadSprites: Image[] = []
 let Bonus1: Sprite = null
 let Ability = 0
 let Jump = 0
 let FireFighter: Sprite = null
+game.splash("A=Jump Up= Super Jump", "B=Immune to fire(5sec) max of 1")
 scene.setBackgroundImage(img`
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
@@ -177,7 +257,6 @@ FireFighter = sprites.create(img`
     . . . f f f f f f f f f f . . . 
     . . . . f f . . . f f f . . . . 
     `, SpriteKind.Player)
-tiles.placeOnRandomTile(FireFighter, assets.tile`Spawn`)
 scene.cameraFollowSprite(FireFighter)
 FireFighter.setStayInScreen(true)
 FireFighter.ay = 500
@@ -205,7 +284,8 @@ Bonus1 = sprites.create(img`
 Bonus1.setPosition(123, 6)
 Bonus1.setBounceOnWall(true)
 Bonus1.setVelocity(randint(50, 100), 50)
-let BadSprites = [
+tiles.placeOnTile(FireFighter, tiles.getTileLocation(0, 13))
+BadSprites = [
 assets.tile`myTile`,
 assets.tile`myTile4`,
 assets.tile`myTile2`,
@@ -217,10 +297,10 @@ game.onUpdate(function () {
     if (FireFighter.tileKindAt(TileDirection.Bottom, sprites.dungeon.collectibleInsignia)) {
         game.gameOver(true)
     }
-    if (BadSprites.length == 3) {
-        BadSprites.push(assets.tile`Fire`)
-    }
 })
 game.onUpdateInterval(1000, function () {
     info.changeScoreBy(-1)
+    if (info.score() == 0) {
+        game.gameOver(false)
+    }
 })
