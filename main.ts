@@ -3,6 +3,7 @@ namespace SpriteKind {
 }
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     if (WaterJump < 3) {
+        FireFighter.vy += -300
         FireFighter.setImage(img`
             ...........ff...........
             .........ff22ff.........
@@ -29,7 +30,6 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
             .............999........
             ............9.9.9.......
             `)
-        FireFighter.vy += -300
         FireFighter.startEffect(effects.bubbles, 500)
         WaterJump += 1
     }
@@ -110,12 +110,17 @@ function CheckGameOver (listOfSprites: Image[]) {
 }
 let fire: Image = null
 let WaterJump = 0
-let BadSprites: Image[] = []
 let Bonus1: Sprite = null
 let Ability = 0
 let Jump = 0
 let FireFighter: Sprite = null
-game.splash("A=Jump Up= Super Jump", "B=Immune to fire(5sec) max of 1")
+let BadSprites: Image[] = []
+BadSprites = [
+assets.tile`myTile`,
+assets.tile`myTile4`,
+assets.tile`myTile2`,
+assets.tile`Fire`
+]
 scene.setBackgroundImage(img`
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
@@ -285,22 +290,10 @@ Bonus1.setPosition(123, 6)
 Bonus1.setBounceOnWall(true)
 Bonus1.setVelocity(randint(50, 100), 50)
 tiles.placeOnTile(FireFighter, tiles.getTileLocation(0, 13))
-BadSprites = [
-assets.tile`myTile`,
-assets.tile`myTile4`,
-assets.tile`myTile2`,
-assets.tile`Fire`
-]
 info.setScore(30)
 game.onUpdate(function () {
     CheckGameOver(BadSprites)
-    if (FireFighter.tileKindAt(TileDirection.Bottom, sprites.dungeon.collectibleInsignia)) {
-        game.gameOver(true)
-    }
 })
 game.onUpdateInterval(1000, function () {
     info.changeScoreBy(-1)
-    if (info.score() == 0) {
-        game.gameOver(false)
-    }
 })
